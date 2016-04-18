@@ -1,0 +1,6 @@
+#!/bin/sh
+
+. ./test_lib.sh
+core=$(./wrapper ./prog_pageprot)
+[ -n "$core" ] || exit 1
+./raise $core

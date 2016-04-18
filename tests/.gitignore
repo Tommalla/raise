@@ -1,0 +1,12 @@
+core.*
+prog_stdio
+prog_exitcode
+prog_syscall
+prog_stack
+prog_pie
+prog_malloc
+prog_pageprot
+raise
+wrapper
+.*.swp
+.gdb_history

@@ -1,0 +1,8 @@
+#!/bin/sh
+
+. ./test_lib.sh
+core=$(sleep 2 | ./wrapper --kill ./prog_syscall)
+[ -n "$core" ] || exit 1
+teststring=1ff5e39d36b85f126108410a76bf95a6a443ce9e6243070b107689cfb358
+output=$(echo $teststring | ./raise $core)
+test "$teststring" = "$output"
