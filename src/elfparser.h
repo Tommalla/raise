@@ -5,6 +5,6 @@
 
 #include <elf.h>
 
-void parse_elf(char *path, Elf32_Ehdr *hdr, Elf32_Shdr **shdr);
+void parse_elf(char *path, Elf32_Ehdr *hdr, Elf32_Phdr *phdrs);
 
 #endif // ELFPARSER_H
