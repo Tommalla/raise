@@ -145,9 +145,11 @@ void process_elf(char *path) {
 	
 	// Scan the table again, this time only load PT_LOAD
 	for (i = 0; i < hdr.e_phnum; ++i) {
-		if (phdrs[i].p_type == PT_LOAD) {
+		if (phdrs[i].p_type == PT_LOAD && phdrs[i].p_filesz > 0) {
 			printf("Reading PT_LOAD at id: %d\n", i);
-			// TODO
+			// FIXME RWE
+			mmap((void *)phdrs[i].p_vaddr, phdrs[i].p_filesz, PROT_EXEC | PROT_READ | PROT_WRITE, 
+			     MAP_PRIVATE, fd, phdrs[i].p_offset);
 		}
 	}
 	

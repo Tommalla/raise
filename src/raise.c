@@ -5,7 +5,6 @@
 #include "elfparser.h"
 
 void revive() {
-	printf("%lu\n", REAX);
 	asm volatile ("pushl REFLAGS\n"
 		      "popfl\n"
 		      "movl REAX, %%eax\n"
