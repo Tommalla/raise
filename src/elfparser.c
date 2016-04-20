@@ -6,6 +6,8 @@
 #include <unistd.h>
 
 #include <sys/mman.h>
+#include <sys/reg.h>
+#include <sys/procfs.h>
 #include <sys/stat.h>
 
 #include "elfparser.h"
@@ -42,6 +44,23 @@ void process_note_file(const char* buffer) {
 		//mmap(NULL
 		close(map_fd);
 	}
+}
+
+void process_prstatus(const char* buffer) {
+	prstatus_t prstatus;
+	memcpy(&prstatus, desc_buf, sizeof(prstatus_t));
+	printf("\tRead prstatus. EBP = %#08x\n", prstatus.pr_reg[EBP]);
+	REAX = prstatus.pr_reg[EAX];
+	REBX = prstatus.pr_reg[EBX];
+	RECX = prstatus.pr_reg[ECX];
+	REDX = prstatus.pr_reg[EDX];
+	RESP = prstatus.pr_reg[UESP];
+	REBP = prstatus.pr_reg[EBP];
+	RESI = prstatus.pr_reg[ESI];
+	REDI = prstatus.pr_reg[EDI];
+	REFLAGS = prstatus.pr_reg[EFL];
+	REIP = prstatus.pr_reg[EIP];
+	
 }
 
 void process_elf(char *path, Elf32_Ehdr *hdr, Elf32_Phdr *phdrs) {
@@ -106,7 +125,7 @@ void process_elf(char *path, Elf32_Ehdr *hdr, Elf32_Phdr *phdrs) {
 						break;
 					case NT_PRSTATUS:
 						puts("\tNT_PRSTATUS");
-						// TODO
+						process_prstatus(desc_buf);
 						break;
 					case NT_386_TLS:
 						puts("\tNT_386_TLS");

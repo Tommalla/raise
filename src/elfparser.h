@@ -5,6 +5,8 @@
 
 #include <elf.h>
 
+unsigned long REAX, REBX, RECX, REDX, RESP, REBP, RESI, REDI, REFLAGS, REIP;
+
 /**
  * @brief Reads and processes the elf file.
  * 
