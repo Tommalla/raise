@@ -3,8 +3,6 @@
 #ifndef ELFPARSER_H
 #define ELFPARSER_H
 
-#include <elf.h>
-
 unsigned long REAX, REBX, RECX, REDX, RESP, REBP, RESI, REDI, REFLAGS, REIP;
 
 /**
@@ -12,6 +10,6 @@ unsigned long REAX, REBX, RECX, REDX, RESP, REBP, RESI, REDI, REFLAGS, REIP;
  * 
  * This includes mapping the memory.
  */
-void process_elf(char *path, Elf32_Ehdr *hdr, Elf32_Phdr *phdrs);
+void process_elf(char *path);
 
 #endif // ELFPARSER_H

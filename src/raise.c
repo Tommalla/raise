@@ -1,11 +1,8 @@
 /* Tomasz Zakrzewski, tz336079  /
  * ZSO 2015/2016, raise - main */
-#include <elf.h>
 #include <stdio.h>
 
 #include "elfparser.h"
-
-#define MAX_PHDRS 10000
 
 void revive() {
 	printf("%lu\n", REAX);
@@ -31,9 +28,7 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 	
-	Elf32_Ehdr elf_header;
-	Elf32_Phdr elf_pheaders[MAX_PHDRS];
-	process_elf(argv[1], &elf_header, elf_pheaders);
+	process_elf(argv[1]);
 	
 	//revive();
 	return 0;

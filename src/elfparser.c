@@ -1,5 +1,6 @@
 /* Tomasz Zakrzewski, tz336079        /
  * ZSO 2015/2016, raise - ELF parser */
+#include <elf.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
@@ -12,8 +13,10 @@
 
 #include "elfparser.h"
 
-char desc_buf[100000];
-void *mapped_mem[100000];
+#define MAX_PHDRS 10000
+#define BUFSIZE 100000
+
+char desc_buf[BUFSIZE];
 
 void process_note_file(const char* buffer) {
 	// This helper method assumes that 
@@ -63,35 +66,36 @@ void process_prstatus(const char* buffer) {
 	
 }
 
-void process_elf(char *path, Elf32_Ehdr *hdr, Elf32_Phdr *phdrs) {
+void process_elf(char *path) {
+	Elf32_Ehdr hdr;
+	Elf32_Phdr phdrs[MAX_PHDRS];
 	int i;
 	FILE *f = fopen(path, "r");
 	int fd = fileno(f);
-	fread(hdr, sizeof(Elf32_Ehdr), 1, f);
+	fread(&hdr, sizeof(Elf32_Ehdr), 1, f);
 	
 	printf("Read the file header!\n");
 	
 	// Move to the beginning of program segment headers
-	fseek(f, hdr->e_phoff, SEEK_SET);
+	fseek(f, hdr.e_phoff, SEEK_SET);
 	
-	if (hdr->e_phentsize != sizeof(Elf32_Phdr)) {
-		printf("Warning: e_phentsize not equal to sizeof(Elf32_Phdr): %d 32\n", hdr->e_phentsize);
+	if (hdr.e_phentsize != sizeof(Elf32_Phdr)) {
+		printf("Warning: e_phentsize not equal to sizeof(Elf32_Phdr): %d 32\n", hdr.e_phentsize);
 	}
 	
 	// Read the table of phdrs
-	for (i = 0; i < hdr->e_phnum; ++i) {
-		fread(&phdrs[i], hdr->e_phentsize, 1, f);
+	for (i = 0; i < hdr.e_phnum; ++i) {
+		fread(&phdrs[i], hdr.e_phentsize, 1, f);
 		printf("Read the program segment header! %#08X\n", phdrs[i].p_type);
 		// FIXME: RWE?
-		mapped_mem[i] = mmap((void *)phdrs[i].p_vaddr, phdrs[i].p_memsz, PROT_EXEC | PROT_READ | PROT_WRITE, 
-				     MAP_PRIVATE | MAP_ANONYMOUS, -1, phdrs[i].p_offset);
-		if (mapped_mem[i] < 0) {
+		if (mmap((void *)phdrs[i].p_vaddr, phdrs[i].p_memsz, PROT_EXEC | PROT_READ | PROT_WRITE, 
+			 MAP_PRIVATE | MAP_ANONYMOUS, -1, phdrs[i].p_offset) < 0) {
 			printf("\tError! Couldn't map the anonymous memory area!");
 		}
 	}
 	
 	// Map PT_NOTE files
-	for (i = 0; i < hdr->e_phnum; ++i) {
+	for (i = 0; i < hdr.e_phnum; ++i) {
 		if (phdrs[i].p_type == PT_NOTE) {
 			printf("Reading PT_NOTEs at id %d, size: %d\n", i, phdrs[i].p_filesz);
 			fseek(f, phdrs[i].p_offset, SEEK_SET);
@@ -129,6 +133,7 @@ void process_elf(char *path, Elf32_Ehdr *hdr, Elf32_Phdr *phdrs) {
 						break;
 					case NT_386_TLS:
 						puts("\tNT_386_TLS");
+						// TODO
 						break;
 					default:
 						puts("\tNot implemented note type. Ignoring");
@@ -139,7 +144,7 @@ void process_elf(char *path, Elf32_Ehdr *hdr, Elf32_Phdr *phdrs) {
 	}
 	
 	// Scan the table again, this time only load PT_LOAD
-	for (i = 0; i < hdr->e_phnum; ++i) {
+	for (i = 0; i < hdr.e_phnum; ++i) {
 		if (phdrs[i].p_type == PT_LOAD) {
 			printf("Reading PT_LOAD at id: %d\n", i);
 			// TODO
