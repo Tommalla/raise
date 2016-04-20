@@ -54,6 +54,7 @@ void process_elf(char *path, Elf32_Ehdr *hdr, Elf32_Phdr *phdrs) {
 				printf("\t(%d) Read successful: type = %#08X, descsz = %d\n", read, nhdr.n_type, nhdr.n_descsz);
 				fseek(f, nhdr.n_namesz + padding, SEEK_CUR);
 				fread(desc_buf, nhdr.n_descsz, 1, f);
+				read += nhdr.n_namesz + padding;
 				padding = (4 - (nhdr.n_descsz % 4)) % 4;
 				read += nhdr.n_descsz + padding;
 				fseek(f, padding, SEEK_CUR);
