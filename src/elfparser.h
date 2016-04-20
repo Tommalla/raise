@@ -5,6 +5,11 @@
 
 #include <elf.h>
 
-void parse_elf(char *path, Elf32_Ehdr *hdr, Elf32_Phdr *phdrs);
+/**
+ * @brief Reads and processes the elf file.
+ * 
+ * This includes mapping the memory.
+ */
+void process_elf(char *path, Elf32_Ehdr *hdr, Elf32_Phdr *phdrs);
 
 #endif // ELFPARSER_H

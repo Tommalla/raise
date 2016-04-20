@@ -1,7 +1,6 @@
 /* Tomasz Zakrzewski, tz336079  /
  * ZSO 2015/2016, raise - main */
 #include <elf.h>
-#include <stdlib.h>
 #include <stdio.h>
 
 #include "elfparser.h"
@@ -16,6 +15,9 @@ int main(int argc, char *argv[]) {
 	
 	Elf32_Ehdr elf_header;
 	Elf32_Phdr elf_pheaders[MAX_PHDRS];
-	parse_elf(argv[1], &elf_header, elf_pheaders);
+	process_elf(argv[1], &elf_header, elf_pheaders);
+	
+	//TODO
+	// 1. Map 
 	return 0;
 }
