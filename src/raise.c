@@ -2,9 +2,14 @@
  * ZSO 2015/2016, raise - main */
 #include <stdio.h>
 
+#include <asm/ldt.h>
+#include <linux/unistd.h>
+#include <sys/syscall.h>
+
 #include "elfparser.h"
 
 void revive() {
+	syscall(SYS_set_thread_area, &USER_DESC);
 	asm volatile ("pushl REFLAGS\n"
 		      "popfl\n"
 		      "movl REAX, %%eax\n"
@@ -29,6 +34,6 @@ int main(int argc, char *argv[]) {
 	
 	process_elf(argv[1]);
 	
-	//revive();
+	revive();
 	return 0;
 }

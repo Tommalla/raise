@@ -2,8 +2,10 @@
  * ZSO 2015/2016, raise - ELF parser */
 #ifndef ELFPARSER_H
 #define ELFPARSER_H
+#include <asm/ldt.h>
 
 unsigned long REAX, REBX, RECX, REDX, RESP, REBP, RESI, REDI, REFLAGS, REIP;
+struct user_desc USER_DESC;
 
 /**
  * @brief Reads and processes the elf file.

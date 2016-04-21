@@ -51,7 +51,7 @@ void process_note_file(const char* buffer) {
 
 void process_prstatus(const char* buffer) {
 	prstatus_t prstatus;
-	memcpy(&prstatus, desc_buf, sizeof(prstatus_t));
+	memcpy(&prstatus, buffer, sizeof(prstatus_t));
 	printf("\tRead prstatus. EBP = %#08x\n", prstatus.pr_reg[EBP]);
 	REAX = prstatus.pr_reg[EAX];
 	REBX = prstatus.pr_reg[EBX];
@@ -63,7 +63,10 @@ void process_prstatus(const char* buffer) {
 	REDI = prstatus.pr_reg[EDI];
 	REFLAGS = prstatus.pr_reg[EFL];
 	REIP = prstatus.pr_reg[EIP];
-	
+}
+
+void process_tls(const char* buffer) {
+	memcpy(&USER_DESC, buffer, sizeof(struct user_desc));
 }
 
 void process_elf(char *path) {
@@ -133,7 +136,7 @@ void process_elf(char *path) {
 						break;
 					case NT_386_TLS:
 						puts("\tNT_386_TLS");
-						// TODO
+						process_tls(desc_buf);
 						break;
 					default:
 						puts("\tNot implemented note type. Ignoring");
@@ -146,7 +149,7 @@ void process_elf(char *path) {
 	// Scan the table again, this time only load PT_LOAD
 	for (i = 0; i < hdr.e_phnum; ++i) {
 		if (phdrs[i].p_type == PT_LOAD && phdrs[i].p_filesz > 0) {
-			printf("Reading PT_LOAD at id: %d\n", i);
+			printf("Mapping PT_LOAD at addr: %#08x\n", phdrs[i].p_vaddr);
 			// FIXME RWE
 			mmap((void *)phdrs[i].p_vaddr, phdrs[i].p_filesz, PROT_EXEC | PROT_READ | PROT_WRITE, 
 			     MAP_PRIVATE, fd, phdrs[i].p_offset);
