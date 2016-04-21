@@ -1,4 +1,4 @@
-CFLAGS=-m32 -g
+CFLAGS=-m32 -g -static -T linker.sh
 
 all: raise
 

@@ -9,15 +9,26 @@
 #include "elfparser.h"
 
 void revive() {
+	printf("Setting registers:\n"
+	       "eax = %#08x\n"
+	       "ebx = %#08x\n"
+	       "ecx = %#08x\n"
+	       "edx = %#08x\n"
+	       "esp = %#08x\n"
+	       "ebp = %#08x\n"
+	       "esi = %#08x\n"
+	       "edi = %#08x\n"
+	       "eip = %#08x\n", REAX, REBX, RECX, REDX, RESP, REBP, RESI, REDI, REIP);
 	syscall(SYS_set_thread_area, &USER_DESC);
 	asm volatile ("pushl REFLAGS\n"
 		      "popfl\n"
+		      "pushl REBP\n"
+		      "popl %%ebp\n"
 		      "movl REAX, %%eax\n"
-		      "movl REBX, %%ebx\n"
 		      "movl RECX, %%ecx\n"
 		      "movl REDX, %%edx\n"
+		      "movl REBX, %%ebx\n"
 		      "movl RESP, %%esp\n"
-		      "movl REBP, %%ebp\n"
 		      "movl RESI, %%esi\n"
 		      "movl REDI, %%edi\n"
 		      "jmp *REIP"
