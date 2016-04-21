@@ -31,6 +31,7 @@ void revive() {
 		      "movl RESP, %%esp\n"
 		      "movl RESI, %%esi\n"
 		      "movl REDI, %%edi\n"
+		      "mov RGS, %%gs\n"
 		      "jmp *REIP"
 		      :
 		      :

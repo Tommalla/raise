@@ -4,7 +4,7 @@
 #define ELFPARSER_H
 #include <asm/ldt.h>
 
-unsigned long REAX, REBX, RECX, REDX, RESP, REBP, RESI, REDI, REFLAGS, REIP;
+unsigned long REAX, REBX, RECX, REDX, RESP, REBP, RESI, REDI, REFLAGS, REIP, RGS;
 struct user_desc USER_DESC;
 
 /**

@@ -36,13 +36,13 @@ void process_note_file(const char* buffer) {
 		memcpy(&page_of, ptr + offset + 2 * sizeof(long), sizeof(long));
 		int map_fd = open(sptr, O_RDONLY);
 		// move to next NUL
-		printf("%#08x %#08x %#08x %s\n", start, end, page_of, sptr); 
+		printf("%#08x %#08x %#08x %s\n", start, end, page_of * page_size, sptr); 
 		for(; *sptr != '\0'; ++sptr);
 		sptr++;
 		
 		// FINALLY map the memory
 		// TODO RWE
-		mmap((void *)start, end - start, PROT_EXEC | PROT_READ | PROT_WRITE, MAP_PRIVATE, map_fd, page_of);
+		mmap((void *)start, end - start, PROT_EXEC | PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_FIXED, map_fd, page_of * page_size);
 		
 		//mmap(NULL
 		close(map_fd);
@@ -63,6 +63,7 @@ void process_prstatus(const char* buffer) {
 	REDI = prstatus.pr_reg[EDI];
 	REFLAGS = prstatus.pr_reg[EFL];
 	REIP = prstatus.pr_reg[EIP];
+	RGS = prstatus.pr_reg[GS];
 }
 
 void process_tls(const char* buffer) {
@@ -92,7 +93,7 @@ void process_elf(char *path) {
 		printf("Read the program segment header! %#08X\n", phdrs[i].p_type);
 		// FIXME: RWE?
 		if (mmap((void *)phdrs[i].p_vaddr, phdrs[i].p_memsz, PROT_EXEC | PROT_READ | PROT_WRITE, 
-			 MAP_PRIVATE | MAP_ANONYMOUS, -1, phdrs[i].p_offset) < 0) {
+			MAP_PRIVATE | MAP_FIXED | MAP_ANON, -1, 0) < 0) {
 			printf("\tError! Couldn't map the anonymous memory area!");
 		}
 	}
@@ -151,8 +152,10 @@ void process_elf(char *path) {
 		if (phdrs[i].p_type == PT_LOAD && phdrs[i].p_filesz > 0) {
 			printf("Mapping PT_LOAD at addr: %#08x\n", phdrs[i].p_vaddr);
 			// FIXME RWE
-			mmap((void *)phdrs[i].p_vaddr, phdrs[i].p_filesz, PROT_EXEC | PROT_READ | PROT_WRITE, 
-			     MAP_PRIVATE, fd, phdrs[i].p_offset);
+			fseek(f, phdrs[i].p_offset, SEEK_SET);
+			fread((void *)phdrs[i].p_vaddr, phdrs[i].p_filesz, 1, f);
+			//mmap((void *)phdrs[i].p_vaddr, phdrs[i].p_filesz, PROT_EXEC | PROT_READ | PROT_WRITE, 
+			//     MAP_PRIVATE | MAP_FIXED | MAP_ANON, fd, phdrs[i].p_offset);
 		}
 	}
 	
