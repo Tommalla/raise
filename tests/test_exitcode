@@ -1,5 +1,4 @@
 #!/bin/sh
-
 . ./test_lib.sh
 core=$(./wrapper ./prog_exitcode)
 [ -n "$core" ] || exit 1

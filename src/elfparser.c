@@ -41,8 +41,8 @@ void process_note_file(const char* buffer) {
 		sptr++;
 		
 		// FINALLY map the memory
-		syscall(SYS_mmap2, (void *)start, end - start, PROT_NONE, 
-			MAP_PRIVATE | MAP_FIXED, map_fd, page_of * page_size);
+		syscall(SYS_mmap2, (void *)start, end - start, PROT_WRITE | PROT_READ | PROT_EXEC, 
+			MAP_PRIVATE | MAP_FIXED, map_fd, page_of * page_size / 4096);
 		
 		syscall(SYS_close, map_fd);
 	}
@@ -140,7 +140,7 @@ void process_elf(const char *path) {
 			if (phdrs[i].p_filesz > 0) {
 				syscall(SYS_mmap2, (void *)(phdrs[i].p_vaddr), phdrs[i].p_filesz, 
 					PROT_READ | PROT_WRITE | PROT_EXEC, 
-					MAP_PRIVATE | MAP_FIXED, fd, phdrs[i].p_offset);
+					MAP_PRIVATE | MAP_FIXED, fd, phdrs[i].p_offset / 4096);
 				//syscall(SYS_lseek, fd, phdrs[i].p_offset, SEEK_SET);
 				//syscall(SYS_read, fd, (void *)(phdrs[i].p_vaddr), phdrs[i].p_filesz);
 			}
