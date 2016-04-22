@@ -41,7 +41,6 @@ void process_note_file(const char* buffer) {
 		sptr++;
 		
 		// FINALLY map the memory
-		// TODO RWE
 		mmap((void *)start, end - start, PROT_EXEC | PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_FIXED, map_fd, page_of * page_size);
 		
 		//mmap(NULL
@@ -70,12 +69,11 @@ void process_tls(const char* buffer) {
 	memcpy(&USER_DESC, buffer, sizeof(struct user_desc));
 }
 
-void process_elf(char *path) {
+void process_elf(const char *path) {
 	Elf32_Ehdr hdr;
 	Elf32_Phdr phdrs[MAX_PHDRS];
 	int i;
 	FILE *f = fopen(path, "r");
-	int fd = fileno(f);
 	fread(&hdr, sizeof(Elf32_Ehdr), 1, f);
 	
 	printf("Read the file header!\n");
@@ -91,7 +89,6 @@ void process_elf(char *path) {
 	for (i = 0; i < hdr.e_phnum; ++i) {
 		fread(&phdrs[i], hdr.e_phentsize, 1, f);
 		printf("Read the program segment header! %#08X\n", phdrs[i].p_type);
-		// FIXME: RWE?
 		if (mmap((void *)phdrs[i].p_vaddr, phdrs[i].p_memsz, PROT_EXEC | PROT_READ | PROT_WRITE, 
 			MAP_PRIVATE | MAP_FIXED | MAP_ANON, -1, 0) < 0) {
 			printf("\tError! Couldn't map the anonymous memory area!");
@@ -125,7 +122,6 @@ void process_elf(char *path) {
 				
 				printf("\t(%d) Note header read successfully: type = %#08X, descsz = %d\n", read, 
 				       nhdr.n_type, nhdr.n_descsz);
-				// FIXME NT_PRSTATUS
 				switch (nhdr.n_type) {
 					case NT_FILE:
 						puts("\tNT_FILE");
@@ -149,13 +145,25 @@ void process_elf(char *path) {
 	
 	// Scan the table again, this time only load PT_LOAD
 	for (i = 0; i < hdr.e_phnum; ++i) {
-		if (phdrs[i].p_type == PT_LOAD && phdrs[i].p_filesz > 0) {
-			printf("Mapping PT_LOAD at addr: %#08x\n", phdrs[i].p_vaddr);
-			// FIXME RWE
-			fseek(f, phdrs[i].p_offset, SEEK_SET);
-			fread((void *)phdrs[i].p_vaddr, phdrs[i].p_filesz, 1, f);
-			//mmap((void *)phdrs[i].p_vaddr, phdrs[i].p_filesz, PROT_EXEC | PROT_READ | PROT_WRITE, 
-			//     MAP_PRIVATE | MAP_FIXED | MAP_ANON, fd, phdrs[i].p_offset);
+		if (phdrs[i].p_type == PT_LOAD) {
+			if (phdrs[i].p_filesz > 0) {
+				printf("Reading PT_LOAD at addr: %#08x\n", phdrs[i].p_vaddr);
+				fseek(f, phdrs[i].p_offset, SEEK_SET);
+				fread((void *)phdrs[i].p_vaddr, phdrs[i].p_filesz, 1, f);
+			}
+			
+			int RWX = 0;
+			if (phdrs[i].p_flags & PF_X) {
+				RWX |= PROT_EXEC;
+			}
+			if (phdrs[i].p_flags & PF_R) {
+				RWX |= PROT_READ;
+			}
+			if (phdrs[i].p_flags & PF_W) {
+				RWX |= PROT_WRITE;
+			}
+			
+			mprotect((void *)phdrs[i].p_vaddr, phdrs[i].p_memsz, RWX);
 		}
 	}
 	

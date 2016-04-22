@@ -1,14 +1,18 @@
 /* Tomasz Zakrzewski, tz336079  /
  * ZSO 2015/2016, raise - main */
+#include <signal.h>
 #include <stdio.h>
+#include <ucontext.h>
 
 #include <asm/ldt.h>
 #include <linux/unistd.h>
+#include <sys/mman.h>
 #include <sys/syscall.h>
 
 #include "elfparser.h"
 
-void revive() {
+void revive(const char *path) {
+	process_elf(path);
 	printf("Setting registers:\n"
 	       "eax = %#08x\n"
 	       "ebx = %#08x\n"
@@ -44,8 +48,13 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 	
-	process_elf(argv[1]);
-	
-	revive();
-	return 0;
+	ucontext_t context;
+	getcontext(&context);
+	context.uc_link = NULL;
+	mmap((void *)0x8000000, SIGSTKSZ, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_GROWSDOWN | MAP_ANON, -1, 0);
+	context.uc_stack.ss_sp = (void *)0x8000000;
+	context.uc_stack.ss_flags = 0;
+	context.uc_stack.ss_size = SIGSTKSZ;
+	makecontext(&context, revive, 1, argv[1]);
+	setcontext(&context);
 }

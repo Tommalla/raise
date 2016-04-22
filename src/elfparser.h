@@ -12,6 +12,6 @@ struct user_desc USER_DESC;
  * 
  * This includes mapping the memory.
  */
-void process_elf(char *path);
+void process_elf(const char *path);
 
 #endif // ELFPARSER_H

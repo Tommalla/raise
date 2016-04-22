@@ -1,4 +1,4 @@
-CFLAGS=-m32 -g -static -T linker.sh
+CFLAGS=-m32 -g -static -Wl,-Ttext-segment=0x0012000
 
 all: raise
 
