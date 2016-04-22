@@ -51,8 +51,8 @@ int main(int argc, char *argv[]) {
 	ucontext_t context;
 	getcontext(&context);
 	context.uc_link = NULL;
-	mmap((void *)0x8000000, SIGSTKSZ, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_GROWSDOWN | MAP_ANON, -1, 0);
-	context.uc_stack.ss_sp = (void *)0x8000000;
+	mmap((void *)0x08000000, SIGSTKSZ, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_GROWSDOWN | MAP_ANON, -1, 0);
+	context.uc_stack.ss_sp = (void *)0x08000000;
 	context.uc_stack.ss_flags = 0;
 	context.uc_stack.ss_size = SIGSTKSZ;
 	makecontext(&context, revive, 1, argv[1]);

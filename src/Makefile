@@ -1,4 +1,4 @@
-CFLAGS=-m32 -g -static -Wl,-Ttext-segment=0x0012000
+CFLAGS=-m32 -g -static -Wl,-Ttext-segment=0x00048000
 
 all: raise
 
