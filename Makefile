@@ -3,7 +3,7 @@ all:
 	make make_tests
 
 make_tests: make_src
-	cp bin/raise tests
+	cp bin/raise tests/
 	cd tests && make
 	
 make_src:

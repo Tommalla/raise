@@ -2,7 +2,6 @@
  * ZSO 2015/2016, raise - ELF parser */
 #include <elf.h>
 #include <fcntl.h>
-#include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -74,7 +73,6 @@ void process_elf(const char *path) {
 	int i;
 	int fd = syscall(SYS_open, path, O_RDONLY);
 	syscall(SYS_read, fd, &hdr, sizeof(Elf32_Ehdr));
-	//printf("%d\n", );
 	
 	// Move to the beginning of program segment headers
 	syscall(SYS_lseek, fd, hdr.e_phoff, SEEK_SET);
@@ -85,11 +83,8 @@ void process_elf(const char *path) {
 	}
 	
 	for (i = 0; i < hdr.e_phnum; ++i) {
-		//if (phdrs[i].p_type == PT_LOAD) {
-			syscall(SYS_mmap2, (void *)phdrs[i].p_vaddr, phdrs[i].p_memsz, 
-					PROT_READ | PROT_WRITE | PROT_EXEC, 
-				MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0);
-		//}
+		syscall(SYS_mmap2, (void *)phdrs[i].p_vaddr, phdrs[i].p_memsz, PROT_READ | PROT_WRITE | PROT_EXEC, 
+			MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0);
 	}
 	
 	// Map PT_NOTE files
@@ -102,7 +97,6 @@ void process_elf(const char *path) {
 				Elf32_Nhdr nhdr;
 				syscall(SYS_read, fd, &nhdr, sizeof(Elf32_Nhdr));
 				            bytes_read += sizeof(Elf32_Nhdr);
-				//printf("%#08x\n", nhdr.n_type);
 				
 				// Skip name (we don't use it anyway)
 				int padding = (4 - (nhdr.n_namesz % 4)) % 4;
@@ -134,15 +128,13 @@ void process_elf(const char *path) {
 		}
 	}
 	
-	// Scan the table again, this time only load PT_LOAD
+	// Scan the table again, this time only load PT_LOAD and set the flags
 	for (i = 0; i < hdr.e_phnum; ++i) {
 		if (phdrs[i].p_type == PT_LOAD) {
 			if (phdrs[i].p_filesz > 0) {
 				syscall(SYS_mmap2, (void *)(phdrs[i].p_vaddr), phdrs[i].p_filesz, 
 					PROT_READ | PROT_WRITE | PROT_EXEC, 
 					MAP_PRIVATE | MAP_FIXED, fd, phdrs[i].p_offset / 4096);
-				//syscall(SYS_lseek, fd, phdrs[i].p_offset, SEEK_SET);
-				//syscall(SYS_read, fd, (void *)(phdrs[i].p_vaddr), phdrs[i].p_filesz);
 			}
 			
 			int RWX = 0;
