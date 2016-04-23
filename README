@@ -1,0 +1,21 @@
+Rozwiązanie:
+(wszystkie mapy robię MAP_FIXED na dokładnie te miejsca, gdzie pokazują Program Headery/NT_FILE; cały faktyczny kod wykonuję w nowym kontekście z przesuniętym stosem).
+
+1. Dla każdego PT_LOADa mapuję jego pamięć anonimowo na taki obszar jaki sugeruje memsz. W ten sposób jednocześnie zeruję tę pamięć.   
+2. Mapuję pliki z PT_NOTE (wpisy NT_FILE) po drodze wypełniając też globalnie pamiętane wartości rejestrów i TLS.
+3. Mapuję faktyczną pamieć z PT_LOADÓW.
+4. Ustawiam uprawnienia dla fragmentów pamięci z PT_LOAD zgodnie z flags.
+5. Odtwarzam TLS.
+6. Odtwarzam rejestry, w szczególności GS.
+7. Skaczę do EIP.
+
+Program linkuję pod jakiś niski adres, tutaj 0x48000. Stos zaczynam w 0x08000000 i ustawiam, żeby rósł w *dół*, aby nie "przebić" nim obszaru mapowanego.
+
+Od momentu pierwszego mapowania, unikam GLIBC, aby wyeliminować problemy z przeskakiwaniem do miejsc w pamięci, w których jest już coś zmapowane (to daje losowe segfaulty) przez całą magię, która jest we wrapperach dodana. Wolam czyste syscalle.
+
+Budowa klasycznie make [all] z poziomu najwyższego katalogu. Uwaga: to zbuduje (a więc i uruchomi) testy. Aby zbudować tylko źródło, make make_src lub make wewnątrz src/ .
+
+
+
+
+
